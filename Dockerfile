@@ -1,14 +1,22 @@
-FROM ubuntu:latest
+FROM alpine:edge
 
-# Mongo stuff
-RUN apt-get update && apt-get install virtualenv mongodb-server -y
+
+RUN apk add --update python3 bash
+RUN python3 -m ensurepip && pip3 install --upgrade pip
+
+RUN \
+echo http://dl-4.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
+apk add --no-cache mongodb && \
+rm /usr/bin/mongosniff /usr/bin/mongoperf && \
+mkdir -p /data/db
+
+
 
 # App
 COPY notes_admin_app /var/www/notes_admin_app/
 WORKDIR /var/www/notes_admin_app
-run virtualenv --python=python3 .env
-run .env/bin/pip install -r requirements.txt
+RUN pip install -qr requirements.txt
 RUN chmod +x startup.sh
 
-CMD ["/bin/bash", "-l", "-c", "/var/www/notes_admin_app/startup.sh"]
-EXPOSE 5000
+ENTRYPOINT [ "/var/www/notes_admin_app/startup.sh" ]
+CMD ["/bin/bash", "-l", "-c", "-x", "/var/www/notes_admin_app/startup.sh"]
