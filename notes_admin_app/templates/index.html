@@ -4,14 +4,28 @@
 
 {% block title %}GDS Notes - Admin{% endblock %}
 
+{% block head %}
+{{ super() }}
+<script>
+ fetch("/get_stats?org=GDS").then(function(response) {
+     return response.json();
+ }).then(function(jsonResponse) {
+     $.each(jsonResponse, function(idx, item) {
+         $('#stats-list').append('<li class="list-group-item"> <span class="badge">'+ item["value"] +' notes</span>'+ item["_id"] +'</li>');
+     });
+ });
+</script>
+{% endblock %}
+
 {% block navbar %}
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
       <a class="navbar-brand" href="#">
-          GDS Notes Admin
+          Notes Admin
       </a>
     </div>
+    <p class="navbar-text">Signed in as bruntonspall (GDS)</p>
   </div>
 </nav>
 {% endblock %}
@@ -19,24 +33,10 @@
 
 {% block content %}
   <div class="container">
-  {%- with messages = get_flashed_messages(with_categories=True) %}
-  {%- if messages %}
-    <div class="row">
-      <div class="col-md-12">
-        {{utils.flashed_messages(messages)}}
+      <div class="page-header">
+          <h1>User stats <small>for the GDS organisation</small></h1>
       </div>
-    </div>
-  {%- endif %}
-  {%- endwith %}
-    <div class="jumbotron">
-      <h1>Welcome to Flask-Bootstrap</h1>
-      <p>This example application demonstrates some (but not all!) of the
-      features of <a href="http://pythonhosted.org/Flask-Bootstrap">
-      Flask-Bootstrap</a>.</p>
-      <p>
-        <a class="btn btn-lg btn-default" role="button"
-           href="http://pythonhosted.org/Flask-Bootstrap" >Show docs</a>
-      </p>
-    </div>
-   </div>
+      <ul class="list-group" id="stats-list">
+      </ul>
+  </div>
 {%- endblock %}

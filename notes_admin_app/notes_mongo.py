@@ -1,7 +1,30 @@
-from pymongo.message import query
-from bson.codec_options import DEFAULT_CODEC_OPTIONS
+from pymongo.errors import OperationFailure
+from bson.code import Code
 
-def get_notes(client, org):
-    q = query(0, 'notes', 0, 100, '{"org": "'+ org +'"}', None, DEFAULT_CODEC_OPTIONS)
-    db = client.get_database('test')
-    return db.send_message(q)
+class MapReduceFail(Exception):
+    pass
+
+def get_stats(db, org):
+    mapper = Code("""
+    function() {
+      if (this.org===\""""+ org +"""\"){
+        emit(this.author, 1);
+      }
+    }
+    """)
+    reducer = Code("""
+    function (key, values) {
+      var total = 0;
+      for (var i = 0; i < values.length; i++) {
+        total += values[i];
+      }
+      return total;
+    }
+    """)
+    try:
+        results = db.notes.map_reduce(mapper, reducer, "myresults")
+        return list(results.find())
+    except OperationFailure:
+        raise MapReduceFail("Something wrong in the map-reduce\n Map: {}\n Reduce: {}".format(mapper, reducer))
+    return results
+
