@@ -16,6 +16,7 @@ mongo load_data.js
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 export FLASK_APP=app.py
+export FLASK_DEBUG=1
 export LISTENING_PORT=${PORT:-"5000"}
 
 python3 -m flask run --host=0.0.0.0 --port=$LISTENING_PORT
